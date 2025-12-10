@@ -20,6 +20,7 @@ const jsonValueSchema: z.ZodType<z.infer<typeof jsonValueSchema>> = z.lazy(() =>
 const createItemSchema = z.object({
     name: z.string().min(1, '名称不能为空'),
     source: z.string().optional().nullable(),
+    category: z.string().optional().nullable(),
 
     quantity: z
         .string()

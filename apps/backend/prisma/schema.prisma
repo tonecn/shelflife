@@ -17,6 +17,7 @@ model Item {
   id     Int     @id @default(autoincrement())
   name   String // 名称（必填）
   source String? // 来源（可选）
+  category String? // 分类（可选）
 
   // 数量管理
   quantity     Decimal? @db.Decimal(10, 3) // 总数量（如 1.5 kg）
