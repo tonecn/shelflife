@@ -12,3 +12,70 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Item {
+  id     Int     @id @default(autoincrement())
+  name   String // 名称（必填）
+  source String? // 来源（可选）
+
+  // 数量管理
+  quantity     Decimal? @db.Decimal(10, 3) // 总数量（如 1.5 kg）
+  unit         String? // 单位（如 "kg", "个"）
+  usedQuantity Decimal? @default(0.0) @map("used_quantity") @db.Decimal(10, 3) // 已使用量
+
+  // 日期
+  productionDate DateTime? @map("production_date") // 生产日期
+  expiryDate     DateTime? @map("expiry_date") // 过期日期
+
+  // 位置（可选）
+  location   Location? @relation(fields: [locationId], references: [id])
+  locationId Int?      @map("location_id")
+
+  // 价格（单位：元）
+  price Decimal? @db.Decimal(12, 2)
+
+  // 附属信息（JSONB，灵活扩展）
+  extraInfo Json? @map("extra_info")
+
+  // 图片
+  images Image[] @relation("ItemImage")
+
+  // 时间戳
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // 索引
+  @@index([locationId])
+  @@map("items")
+}
+
+model Location {
+  id   Int    @id @default(autoincrement())
+  name String // 位置名称（如 "厨房", "工具箱"）
+
+  // 树形结构：自引用
+  parent   Location?  @relation("LocationChildren", fields: [parentId], references: [id])
+  parentId Int?       @map("parent_id")
+  children Location[] @relation("LocationChildren")
+
+  // 关联物品
+  items Item[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([parentId])
+  @@map("locations")
+}
+
+model Image {
+  id        Int    @id @default(autoincrement())
+  item      Item   @relation("ItemImage", fields: [itemId], references: [id])
+  itemId    Int    @map("item_id")
+  imageUrl  String @map("image_url") // 存储路径，如 "/uploads/item_123_1.jpg"
+  sortOrder Int    @default(0) @map("sort_order") // 排序
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([itemId])
+  @@map("item_images")
+}
